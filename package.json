@@ -1,0 +1,21 @@
+{
+  "name": "checkers",
+  "version": "1.0.0",
+  "description": "Checkers game (international version 10x10)",
+  "main": "index.html",
+  "repository": "https://github.com/yaaax/checkers.git",
+  "author": "Yaacov <yaacov@goodimpact.studio>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-editorconfig": "^2.1.2",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^1.19.1",
+    "prettier-eslint": "^9.0.1",
+    "stylelint": "^13.2.1",
+    "stylelint-config-prettier": "^8.0.1",
+    "stylelint-prettier": "^1.1.2"
+  }
+}
