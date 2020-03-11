@@ -1,8 +1,55 @@
 window.onload = function() {
-	// The initial setup
+	// -----------------------
+	// Configuration variables
+	// -----------------------
+
+	/**
+	 * Board size : number of tiles (same horizontally and vertically)
+	 * @constant
+	 * @type {int}
+	 */
 	const boardSize = 10;
+
+	/**
+	 * Number of rows filled with pieces at the beggining of the game
+	 * @constant
+	 * @type {int}
+	 */
 	const pieceRowCount = 4;
-	const pieceSize = 3.5; // size in 'rem'
+
+	/**
+	 * Size of a piece (in 'rem')
+	 * @constant
+	 * @type {int}
+	 */
+	const pieceSize = 3.5;
+
+	// -------------------------------
+	// Building the initial board game
+	// -------------------------------
+
+	/**
+	 * Array describing the initial state of the game with numbers:
+	 * - 0: empty tile
+	 * - 1: player 1 piece
+	 * - 2: player 2 piece
+	 * - 3: player 1 king piece
+	 * - 4: player 2 king piece
+	 * It's an array of rows, each row being an array of columns
+	 *
+	 * 	Example for boardSize = 8 and pieceRowCount = 3:
+	 * 	[0, 1, 0, 1, 0, 1, 0, 1],
+	 * 	[1, 0, 1, 0, 1, 0, 1, 0],
+	 * 	[0, 1, 0, 1, 0, 1, 0, 1],
+	 * 	[0, 0, 0, 0, 0, 0, 0, 0],
+	 * 	[0, 0, 0, 0, 0, 0, 0, 0],
+	 * 	[2, 0, 2, 0, 2, 0, 2, 0],
+	 * 	[0, 2, 0, 2, 0, 2, 0, 2],
+	 * 	[2, 0, 2, 0, 2, 0, 2, 0]
+	 *
+	 * @constant
+	 * @type {int[]int[]}
+	 */
 	const gameBoard = [];
 
 	// Player 1 pieces
@@ -29,18 +76,11 @@ window.onload = function() {
 		}
 	}
 
-	// Result should be something like this :
-	// (Ex here for boardSize = 8 and pieceRowCount = 3)
-	// [0, 1, 0, 1, 0, 1, 0, 1],
-	// [1, 0, 1, 0, 1, 0, 1, 0],
-	// [0, 1, 0, 1, 0, 1, 0, 1],
-	// [0, 0, 0, 0, 0, 0, 0, 0],
-	// [0, 0, 0, 0, 0, 0, 0, 0],
-	// [2, 0, 2, 0, 2, 0, 2, 0],
-	// [0, 2, 0, 2, 0, 2, 0, 2],
-	// [2, 0, 2, 0, 2, 0, 2, 0]
+	// -----
+	// Tests
+	// -----
 
-	// TEST King
+	// // TEST King
 	// gameBoard = [
 	// 	[0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
 	// 	[1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
@@ -54,7 +94,7 @@ window.onload = function() {
 	// 	[2, 0, 2, 0, 2, 0, 2, 0, 0, 0]
 	// ];
 
-	// TEST End of game
+	// // TEST End of game
 	// gameBoard = [
 	// 	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	// 	[3, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -68,45 +108,64 @@ window.onload = function() {
 	// 	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 	// ];
 
-	// arrays to store the instances
+	// --------------
+	// Main variables
+	// --------------
+
+	/**
+	 * Array storing the Piece instances
+	 * @constant
+	 * @type {Piece[]}
+	 */
 	const pieces = [];
+
+	/**
+	 * Array storing the Tile instances
+	 * @constant
+	 * @type {Tile[]}
+	 */
 	const tiles = [];
 
 	/**
-	 * Distance
+	 * Utility function calculating the distance between 2 positions
 	 *
-	 * @param {*} x1
-	 * @param {*} y1
-	 * @param {*} x2
-	 * @param {*} y2
-	 * @return {Number} distance
+	 * @param {int} x1 Position 1 x
+	 * @param {int} y1 Position 1 y
+	 * @param {int} x2 Position 2 x
+	 * @param {int} y2 Position 2 y
+	 *
+	 * @return {number} distance
 	 */
 	const dist = function(x1, y1, x2, y2) {
 		return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 	};
 
 	/**
-	 * Piece object - there are 24 instances of them in a checkers game
+	 * Piece Object
 	 *
-	 * @param {*} element
-	 * @param {*} position
-	 * @param {int} playerNumber
-	 * @param {*} testInitKing
+	 * @param {HTMLDivElement} element The <div> element of the DOM linked to this
+	 * 																	Piece
+	 * @param {int[]} position	Array describing the position of this Piece on the
+	 *													board [row, column]
+	 * @param {int} playerNumber	1 for Player 1, 2 for player 2
+	 * @param {boolean} testInitKing	Only used for tests purpose to instanciate
+	 *																a piece directly as a king
 	 */
 	function Piece(element, position, playerNumber, testInitKing) {
+		this.element = element;
+		this.position = position;
+
+		// -2 for kings (3 is king for player 1, 4 is king for player 2)
+		this.player = playerNumber <= 2 ? playerNumber : playerNumber - 2;
+
 		// when jump exist, regular move is not allowed since there is
 		// no jump at round 1, all pieces are allowed to move initially
 		this.allowedtomove = true;
-		// linked DOM element
-		this.element = element;
-		// positions on gameBoard array in format row, column
-		this.position = position;
-		// which player's piece i it
-		this.player = "";
-		this.player = playerNumber <= 2 ? playerNumber : playerNumber - 2;
-		// -2 for kings...
 
-		// makes object a king
+		/**
+		 * Make this Piece a king
+		 * A king can move in all 4 directions and several tiles at the same time
+		 */
 		this.makeKing = function() {
 			this.element.css(
 				"backgroundImage",
@@ -119,33 +178,53 @@ window.onload = function() {
 		} else {
 			this.king = false;
 		}
-		// moves the piece
+
+		/**
+		 * Move this Piece to a given Tile, specifying if it's a jump or not
+		 *
+		 * @param	{Tile} tile
+		 * @param {boolean} isJump
+		 *
+		 * @return {boolean} true if this Piece has been moved, otherwise false
+		 */
 		this.move = function(tile, isJump) {
 			this.element.removeClass("selected");
-			if (!Board.isValidPlacetoMove(tile.position[0], tile.position[1])) {
+			const tileRow = tile.position[0];
+			const tileCol = tile.position[1];
+			if (!Board.isValidPlacetoMove(tileRow, tileCol)) {
 				return false;
 			}
-			// if it's not a jump, make sure piece doesn't go backwards
-			// if it's not a king
+
+			// If it's not a jump, and this Piece is not a king,
+			// make sure this Piece doesn't go backwards
 			if (!isJump) {
-				if (this.player == 1 && this.king == false) {
-					if (tile.position[0] < this.position[0]) return false;
-				} else if (this.player == 2 && this.king == false) {
-					if (tile.position[0] > this.position[0]) return false;
+				if (this.player === 1 && !this.king) {
+					if (tileRow < this.position[0]) {
+						return false;
+					}
+				} else if (this.player === 2 && !this.king) {
+					if (tileRow > this.position[0]) {
+						return false;
+					}
 				}
 			}
-			// remove the mark from Board.board and put it in the new spot
+
+			// Move the mark (1, 2, 3 or 4) in Board.board (previous mark becomes 0)
 			Board.board[this.position[0]][this.position[1]] = 0;
-			Board.board[tile.position[0]][tile.position[1]] = this.player;
-			this.position = [tile.position[0], tile.position[1]];
-			// change the css using board's dictionary
+			Board.board[tileRow][tileCol] = this.player;
+
+			// Update position
+			this.position = [tileRow, tileCol];
+
+			// Change the css using board's dictionary
 			this.element.css("top", Board.dictionary[this.position[0]]);
 			this.element.css("left", Board.dictionary[this.position[1]]);
-			// if piece reaches the end of the row on opposite side crown it a king
-			// (can move all directions)
+
+			// If this Piece reaches the end of the column on the opposite side of the
+			// board, it becomes a king
 			if (
 				!this.king &&
-				(this.position[0] == 0 || this.position[0] == boardSize - 1)
+				(this.position[0] === 0 || this.position[0] === boardSize - 1)
 			) {
 				this.makeKing();
 			}
@@ -154,15 +233,17 @@ window.onload = function() {
 
 		/**
 		 * Tells if this Piece is for Player 1 (otherwise it's for Player 2...)
-		 * @return {boolean}
+		 *
+		 * @return {boolean} true if this Piece is player 1's otherwise false
 		 */
 		this.isPlayer1 = function() {
 			return this.player === 1 || this.player === 3;
 		};
 
 		/**
-		 * Tests if piece can jump anywhere
-		 * @return {boolean}
+		 * Tell if this Piece can jump somewhere
+		 *
+		 * @return {boolean} true if this Piece can jump somewhere, otherwise false
 		 */
 		this.canJumpAny = function() {
 			const oldX = this.position[1];
@@ -176,10 +257,12 @@ window.onload = function() {
 		};
 
 		/**
-		 * Tests if an opponent jump can be made to a specific place
+		 * Tell if an opponent jump can be made to a specific position
 		 *
-		 * @param {array} newPosition
-		 * @return {boolean}
+		 * @param {int[]} newPosition Array describing the position of this Piece on
+		 * 														the board [row, column]
+		 *
+		 * @return {boolean} true if an opponent jump is possible, otherwise false
 		 */
 		this.canOpponentJump = function(newPosition) {
 			// find what the displacement is
@@ -194,13 +277,6 @@ window.onload = function() {
 			const oldX = this.position[1];
 			const oldY = this.position[0];
 
-			// make sure object doesn't go backwards if not a king
-			// if (this.player == 1 && this.king == false) {
-			//   if (newY < oldY) return false;
-			// } else if (this.player == 2 && this.king == false) {
-			//   if (newY > oldY) return false;
-			// }
-			// "middle" tile where the piece to be conquered sits
 			const stepX = newX > oldX ? 1 : -1;
 			const stepY = newY > oldY ? 1 : -1;
 
@@ -231,12 +307,13 @@ window.onload = function() {
 				}
 			}
 
-			// Here checkY, checkX correspond to the opponant to be jumped
-			// find which object instance is sitting there
+			// From here checkY and checkX correspond to the opponent to be jumped
+
+			// Find which Piece instance is sitting there
 			for (const pieceIndex in pieces) {
 				if (
-					pieces[pieceIndex].position[0] == checkY &&
-					pieces[pieceIndex].position[1] == checkX
+					pieces[pieceIndex].position[0] === checkY &&
+					pieces[pieceIndex].position[1] === checkX
 				) {
 					if (this.player != pieces[pieceIndex].player) {
 						// return the piece sitting there
@@ -247,23 +324,27 @@ window.onload = function() {
 		};
 
 		/**
-		 * Opponent Jump
+		 * Make an opponent Jump by going to a Tile
 		 *
-		 * @param {Tile} tile
-		 * @return {boolean}
+		 * @param {Tile} tile Tile at final destination
+		 *
+		 * @return {boolean} true if an opponent jump has been made, otherwise false
 		 */
 		this.opponentJump = function(tile) {
 			const pieceToRemove = this.canOpponentJump(tile.position);
-			// if there is a piece to be removed, remove it
-			if (pieceToRemove) {
-				pieceToRemove.remove();
-				return true;
+			if (!pieceToRemove) {
+				return false;
 			}
-			return false;
+
+			// remove the opponent Piece
+			pieceToRemove.remove();
+			return true;
 		};
 
 		/**
-		 * Remove
+		 * Remove this Piece from th board
+		 * /!\ It only sets the position to an empty array ([])
+		 * @todo rework
 		 */
 		this.remove = function() {
 			// remove it and delete it from the gameboard
@@ -278,17 +359,8 @@ window.onload = function() {
 			}
 			Board.board[this.position[0]][this.position[1]] = 0;
 
-			// Reset position so it doesn't get picked up by the for loop in the
-			// canOpponentJump method
+			// Reset position
 			this.position = [];
-			const playerWon = Board.checkifAnybodyWon();
-			if (playerWon !== false) {
-				if (playerWon === 0) {
-					$("#winner").html("Égalité");
-				} else {
-					$("#winner").html("Le joueur " + playerWon + " gagne !");
-				}
-			}
 		};
 	}
 
@@ -358,18 +430,67 @@ window.onload = function() {
 		};
 	}
 
-	// The Board object controls the logic of the game
+	/**
+	 * The Board object controls the logic of the game
+	 * @namespace
+	 */
 	const Board = {
+		/**
+		 * Array describing the initial state of the game with numbers:
+		 * @constant
+		 * @type {int[]int[]}
+		 * @see {@link gameBoard}
+		 */
 		board: gameBoard,
+
+		/**
+		 * Object storing the score of each player
+		 * @constant
+		 * @type {object} score
+		 * @type {int} score.player1 - Player 1 score
+		 * @type {int} score.player2 - Player 2 score
+		 * @todo check if still usefull
+		 */
 		score: {
 			player1: 0,
 			player2: 0
 		},
-		playerTurn: 1,
+
+		/**
+		 * Active player number : 1 or 2
+		 * @constant
+		 * @type {int} [1]
+		 */
+		activePlayer: 1,
+
+		/**
+		 * Flag telling if a jump exists. In that case it's not allowed to move
+		 * other pieces
+		 * @type {boolean} [false]
+		 */
 		jumpexist: false,
+
+		/**
+		 * Flag telling if game board is in "continuous jump" mode
+		 * -> "is it in the middle of a multiple jump move?"
+		 * @type {boolean} [false]
+		 */
 		continuousjump: false,
+
+		/**
+		 * The <div> of the DOM holding all the tiles
+		 * @constant
+		 * @type {HTMLDivElement} [$("div.tiles")]
+		 */
 		tilesElement: $("div.tiles"),
-		// Dictionary to convert position in Board.board to the viewport units
+
+		/**
+		 * Dictionary to convert position in Board.board to 'rem' units
+		 * Ex: ['0rem', '10rem', '20rem', '30rem', '40rem',
+		 *       '50rem', '60rem', '70rem', '80rem', '90rem']
+		 * @constant
+		 * @type {string[]}
+		 */
 		dictionary: [],
 
 		/**
@@ -378,8 +499,6 @@ window.onload = function() {
 		initalize: function() {
 			// Initialize dictionnary
 			// Should be something like :
-			// dictionary: ['0rem', '10rem', '20rem', '30rem', '40rem',
-			//   '50rem', '60rem', '70rem', '80rem', '90rem']
 			let pos = 0;
 			const dictionary = this.dictionary;
 			for (let i = 0; i <= boardSize; ++i) {
@@ -387,12 +506,13 @@ window.onload = function() {
 				pos += pieceSize;
 			}
 
-			let countPieces = 0;
+			let pieceId = 0;
 			let countTiles = 0;
 
 			for (let row = 0; row < boardSize; ++row) {
 				for (let column = 0; column < boardSize; ++column) {
-					const piece = this.board[row][column];
+					let piece = this.board[row][column];
+					let isKing = false;
 					// Whole set of if statements control where the tiles and pieces
 					// should be placed on the board
 					if (row % 2 == 1) {
@@ -404,26 +524,13 @@ window.onload = function() {
 							countTiles = this.tileRender(row, column, countTiles);
 						}
 					}
-					if (piece == 1) {
-						countPieces = this.playerPiecesRender(1, row, column, countPieces);
-					} else if (piece == 2) {
-						countPieces = this.playerPiecesRender(2, row, column, countPieces);
-					} else if (piece == 3) {
-						countPieces = this.playerPiecesRender(
-							1,
-							row,
-							column,
-							countPieces,
-							true
-						);
-					} else if (piece == 4) {
-						countPieces = this.playerPiecesRender(
-							2,
-							row,
-							column,
-							countPieces,
-							true
-						);
+
+					if (piece === 3 || piece === 4) {
+						piece -= 2;
+						isKing = true;
+					}
+					if (piece > 0) {
+						this.playerPiecesRender(piece, row, column, pieceId++, isKing);
 					}
 				}
 			}
@@ -462,7 +569,6 @@ window.onload = function() {
 		 * @param {int} column
 		 * @param {int} countPieces
 		 * @param {boolean} testInitKing
-		 * @return {int} number of pieces
 		 */
 		playerPiecesRender: function(
 			playerNumber,
@@ -482,15 +588,14 @@ window.onload = function() {
 			);
 			pieces[countPieces] = new Piece(
 				$("#" + countPieces),
-				[parseInt(row), parseInt(column)],
+				[row, column],
 				playerNumber,
 				testInitKing
 			);
-			return countPieces + 1;
 		},
 
 		/**
-		 * Check if the location has an object
+		 * Check if the position is in the boundaries of the board
 		 *
 		 * @param {int} row
 		 * @param {int} column
@@ -501,7 +606,7 @@ window.onload = function() {
 		},
 
 		/**
-		 * Check if the location has an object
+		 * Get the type of object at a given position of the board
 		 *
 		 * @param {int} row
 		 * @param {int} column
@@ -535,23 +640,42 @@ window.onload = function() {
 		/**
 		 * Change the active player - also changes div.turn's CSS
 		 */
-		changePlayerTurn: function() {
-			if (this.playerTurn == 1) {
-				this.playerTurn = 2;
+		changeActivePlayer: function() {
+			if (this.activePlayer == 1) {
+				this.activePlayer = 2;
 				$(".turn").css(
 					"background",
 					"linear-gradient(to right, transparent 50%, #BEEE62 50%)"
 				);
 			} else {
-				this.playerTurn = 1;
+				this.activePlayer = 1;
 				$(".turn").css(
 					"background",
 					"linear-gradient(to right, #BEEE62 50%, transparent 50%)"
 				);
 			}
 			this.check_if_jump_exist();
-			return;
+
+			// Display a message if the party is finished
+			// (someone won or there is a draw)
+			const playerWon = Board.checkifAnybodyWon();
+			if (playerWon !== false) {
+				if (playerWon === 0) {
+					$("#winner").html("Égalité");
+				} else {
+					$("#winner").html("Le joueur " + playerWon + " gagne !");
+				}
+			}
 		},
+
+		/**
+		 * Check if anybody won, or if there is a draw
+		 *
+		 * @return {boolean|int}  false if the game must go on,
+		 * 												0 if there is a draw
+		 * 												1 if player 1 has won
+		 * 												2 if player 2 has won
+		 */
 		checkifAnybodyWon: function() {
 			let nbPiecesPlayer1 = 0;
 			let nbPiecesPlayer2 = 0;
@@ -587,14 +711,14 @@ window.onload = function() {
 		},
 
 		/**
-		 * Reset the game
+		 * Reset the game by simply reloading the page
 		 */
 		clear: function() {
 			location.reload();
 		},
 
 		/**
-		 * Check if jump exists
+		 * Check if a jump exists
 		 */
 		check_if_jump_exist: function() {
 			this.jumpexist = false;
@@ -604,7 +728,7 @@ window.onload = function() {
 				// if jump exist, only set those "jump" pieces "allowed to move"
 				if (
 					k.position.length != 0 &&
-					k.player == this.playerTurn &&
+					k.player == this.activePlayer &&
 					k.canJumpAny()
 				) {
 					this.jumpexist = true;
@@ -615,41 +739,15 @@ window.onload = function() {
 			if (!this.jumpexist) {
 				for (const k of pieces) k.allowedtomove = true;
 			}
-		},
-
-		/**
-		 * Possibly helpful for communication with back-end
-		 * @return {string}
-		 */
-		str_board: function() {
-			let ret = "";
-			for (let row = 0; row < boardSize; ++row) {
-				for (let column = 0; column < boardSize; ++column) {
-					const piece = this.board[row][column];
-					let found = false;
-					for (const k of pieces) {
-						if (k.position[0] == row && k.position[1] == column) {
-							if (k.king) ret += piece + 2;
-							else ret += piece;
-							found = true;
-							break;
-						}
-					}
-					if (!found) {
-						ret += "0";
-					}
-				}
-			}
-			return ret;
 		}
 	};
 
 	// Initialize the board
 	Board.initalize();
 
-	/** *
-  Events
-  ***/
+	// ------
+	// Events
+	// ------
 
 	/**
 	 * Select the piece on click if it is the player's turn
@@ -661,7 +759,7 @@ window.onload = function() {
 				.parent()
 				.attr("class")
 				.split(" ")[0] ==
-			"player" + Board.playerTurn + "pieces";
+			"player" + Board.activePlayer + "pieces";
 		if (isPlayersTurn) {
 			if (!Board.continuousjump && pieces[$(this).attr("id")].allowedtomove) {
 				if ($(this).hasClass("selected")) selected = true;
@@ -682,13 +780,6 @@ window.onload = function() {
 				console.log(message);
 			}
 		}
-	});
-
-	/**
-	 * Reset game when clear button is pressed
-	 */
-	$("#cleargame").on("click", function() {
-		Board.clear();
 	});
 
 	/**
@@ -714,25 +805,32 @@ window.onload = function() {
 						piece.move(tile, true);
 						if (piece.canJumpAny()) {
 							// change back to original since another turn can be made
-							//  Board.changePlayerTurn();
+							//  Board.changeActivePlayer();
 							piece.element.addClass("selected");
 							// exist continuous jump, you are not allowed to de-select this
 							// piece or select other pieces
 							Board.continuousjump = true;
 						} else {
-							Board.changePlayerTurn();
+							Board.changeActivePlayer();
 						}
 					}
 					// if it's regular then move it if no jumping is available
 				} else if (inRange == "regular" && !Board.jumpexist) {
 					if (!piece.canJumpAny()) {
 						piece.move(tile);
-						Board.changePlayerTurn();
+						Board.changeActivePlayer();
 					} else {
 						alert("Si un pion peut être capturé, vous devez le faire !");
 					}
 				}
 			}
 		}
+	});
+
+	/**
+	 * Reset game when clear button is pressed
+	 */
+	$("#cleargame").on("click", function() {
+		Board.clear();
 	});
 };
