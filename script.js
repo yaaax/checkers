@@ -347,10 +347,13 @@ window.onload = function() {
 					this.position[1],
 					piece.position[0],
 					piece.position[1]
-				) > Math.sqrt(2)
+				) > Math.sqrt(2) &&
+				this.king
 			) {
 				// jump move
 				return "regular";
+			} else {
+				return false;
 			}
 		};
 	}
