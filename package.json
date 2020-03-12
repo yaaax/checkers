@@ -1,21 +1,36 @@
 {
-  "name": "checkers",
-  "version": "1.0.0",
-  "description": "Checkers game (international version 10x10)",
-  "main": "index.html",
-  "repository": "https://github.com/yaaax/checkers.git",
-  "author": "Yaacov <yaacov@goodimpact.studio>",
-  "license": "MIT",
-  "devDependencies": {
-    "eslint": "^6.8.0",
-    "eslint-config-google": "^0.14.0",
-    "eslint-config-prettier": "^6.10.0",
-    "eslint-plugin-editorconfig": "^2.1.2",
-    "eslint-plugin-prettier": "^3.1.2",
-    "prettier": "^1.19.1",
-    "prettier-eslint": "^9.0.1",
-    "stylelint": "^13.2.1",
-    "stylelint-config-prettier": "^8.0.1",
-    "stylelint-prettier": "^1.1.2"
-  }
+	"name": "checkers",
+	"version": "1.0.0",
+	"description": "Checkers game (international version 10x10)",
+	"main": "index.html",
+	"repository": "https://github.com/yaaax/checkers.git",
+	"author": "Yaacov <yaacov@goodimpact.studio>",
+	"license": "MIT",
+	"scripts": {
+		"dev": "parcel index.html",
+		"build": "parcel build index.html"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.8.7",
+		"@babel/polyfill": "^7.8.7",
+		"babel-plugin-starts-with-ends-with": "^1.0.2",
+		"babel-preset-env": "^1.7.0",
+		"eslint": "^6.8.0",
+		"eslint-config-google": "^0.14.0",
+		"eslint-config-prettier": "^6.10.0",
+		"eslint-plugin-editorconfig": "^2.1.2",
+		"eslint-plugin-prettier": "^3.1.2",
+		"parcel-bundler": "^1.12.4",
+		"parcel-plugin-clean-dist": "^0.0.6",
+		"prettier": "^1.19.1",
+		"prettier-eslint": "^9.0.1",
+		"sass": "^1.26.3",
+		"stylelint": "^13.2.1",
+		"stylelint-config-prettier": "^8.0.1",
+		"stylelint-prettier": "^1.1.2"
+	},
+	"dependencies": {
+		"axios": "^0.19.2",
+		"jquery": "^3.4.1"
+	}
 }

@@ -1,3 +1,6 @@
+import "./style.scss";
+import $ from "jquery";
+
 window.onload = function() {
 	// -----------------------
 	// Configuration variables
@@ -742,7 +745,6 @@ window.onload = function() {
 		}
 	};
 
-	// Initialize the board
 	Board.initalize();
 
 	// ------

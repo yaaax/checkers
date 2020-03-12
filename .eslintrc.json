@@ -1,36 +1,32 @@
 {
-  "env": {
-    "browser": true,
-    "es6": true,
+	"env": {
+		"browser": true,
+		"es6": true,
 		"jquery": true
-  },
-  "extends": [
-    "eslint:recommended",
-    "google",
-    "plugin:prettier/recommended"
-  ],
-  "globals": {
-    "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly"
-  },
-  "parserOptions": {
-    "ecmaVersion": 2018
-  },
-  "plugins": [
-    "editorconfig"
-  ],
-  "rules": {
-    "editorconfig/editorconfig": [
-      "error"
-    ],
-    "max-len": [
-      "error", 80, 2, {
-        "ignoreUrls": true,
-        "ignoreComments": false,
-        "ignoreRegExpLiterals": true,
-        "ignoreStrings": false,
-        "ignoreTemplateLiterals": false
-      }
-    ]
-  }
+	},
+	"extends": ["eslint:recommended", "google", "plugin:prettier/recommended"],
+	"globals": {
+		"Atomics": "readonly",
+		"SharedArrayBuffer": "readonly"
+	},
+	"parserOptions": {
+		"ecmaVersion": 2018,
+		"sourceType": "module"
+	},
+	"plugins": ["editorconfig"],
+	"rules": {
+		"editorconfig/editorconfig": ["error"],
+		"max-len": [
+			"error",
+			80,
+			2,
+			{
+				"ignoreUrls": true,
+				"ignoreComments": false,
+				"ignoreRegExpLiterals": true,
+				"ignoreStrings": false,
+				"ignoreTemplateLiterals": false
+			}
+		]
+	}
 }

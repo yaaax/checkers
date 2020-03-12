@@ -1,0 +1,11 @@
+{
+	"plugins": ["starts-with-ends-with"],
+  "presets": [
+    ["env", {
+      "targets": {
+        "chrome": 52,
+        "browsers": ["> 0.25%, not dead"]
+      }
+    }]
+  ]
+}

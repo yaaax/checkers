@@ -1,2 +1,6 @@
+#Parcel
+.cache
+dist
+
 style.css.map
 node_modules
