@@ -423,7 +423,7 @@ window.onload = function() {
 					piece.position[0],
 					piece.position[1]
 				) > Math.sqrt(2) &&
-				this.king
+				piece.king
 			) {
 				// jump move
 				return "regular";
