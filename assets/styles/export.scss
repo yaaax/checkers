@@ -1,0 +1,10 @@
+@import "./_config/variables";
+
+// Export the board and pieces sizes to make it accessible to JS
+:export {
+	// rem
+	pieceSize: $pieceSize;
+
+	// rem
+	pieceMargin: $pieceMargin;
+}
