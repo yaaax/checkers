@@ -1,0 +1,19 @@
+{
+	// Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
+	// Passez le curseur de la souris sur les descriptions des attributs existants.
+	// Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Lance Chrome sur localhost",
+			"type": "chrome",
+			"request": "launch",
+			"url": "http://localhost:1234",
+			"webRoot": "${workspaceFolder}/dist",
+			"sourceMaps": true,
+			"breakOnLoad": true,
+			"runtimeExecutable": "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+			"userDataDir": true
+		}
+	]
+}
