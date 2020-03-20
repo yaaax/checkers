@@ -4,3 +4,12 @@ dist
 
 style.css.map
 node_modules
+
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+yarn-debug.log*
+yarn-error.log*
