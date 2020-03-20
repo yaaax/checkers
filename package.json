@@ -7,14 +7,15 @@
 	"author": "Yaacov <yaacov@goodimpact.studio>",
 	"license": "MIT",
 	"scripts": {
-		"dev": "parcel index.html",
-		"build": "parcel build index.html"
+		"dev": "cross-env NODE_ENV=development parcel --no-cache index.html",
+		"build": "cross-env NODE_ENV=production parcel build --no-cache index.html"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.8.7",
 		"@babel/polyfill": "^7.8.7",
 		"babel-plugin-starts-with-ends-with": "^1.0.2",
 		"babel-preset-env": "^1.7.0",
+		"cross-env": "^7.0.2",
 		"eslint": "^6.8.0",
 		"eslint-config-google": "^0.14.0",
 		"eslint-config-prettier": "^6.10.0",

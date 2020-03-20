@@ -7,7 +7,8 @@
 	"extends": ["eslint:recommended", "google", "plugin:prettier/recommended"],
 	"globals": {
 		"Atomics": "readonly",
-		"SharedArrayBuffer": "readonly"
+		"SharedArrayBuffer": "readonly",
+		"process": true
 	},
 	"parserOptions": {
 		"ecmaVersion": 2018,
@@ -27,6 +28,7 @@
 				"ignoreStrings": false,
 				"ignoreTemplateLiterals": false
 			}
-		]
+		],
+		"no-process-env": 1
 	}
 }
