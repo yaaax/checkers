@@ -1,4 +1,3 @@
-import $ from "jquery";
 import config from "./config.js";
 import Api from "./api.js";
 import styles from "./assets/styles/export.scss";
@@ -14,8 +13,7 @@ console.info("Config loaded:");
 console.dir(config);
 
 const boardConf = config.board;
-
-window.onload = function() {
+window.addEventListener("DOMContentLoaded", event => {
 	/**
 	 * Array storing the Piece instances
 	 * @constant
@@ -71,10 +69,8 @@ window.onload = function() {
 		 * A king can move in all 4 directions and several tiles at the same time
 		 */
 		this.makeKing = function() {
-			this.element.css(
-				"backgroundImage",
-				"url('./king" + this.player + ".png')"
-			);
+			this.element.style.backgroundImage =
+				"url('./king" + this.player + ".png')";
 			this.king = true;
 		};
 		if (testInitKing) {
@@ -92,7 +88,7 @@ window.onload = function() {
 		 * @return {boolean} true if this Piece has been moved, otherwise false
 		 */
 		this.move = function(tile, isJump) {
-			this.element.removeClass("selected");
+			this.element.classList.remove("selected");
 			const tileRow = tile.position[0];
 			const tileCol = tile.position[1];
 			if (!Board.isValidPlacetoMove(tileRow, tileCol)) {
@@ -121,8 +117,8 @@ window.onload = function() {
 			this.position = [tileRow, tileCol];
 
 			// Change the css using board's dictionary
-			this.element.css("top", Board.dictionary[this.position[0]]);
-			this.element.css("left", Board.dictionary[this.position[1]]);
+			this.element.style.top = Board.dictionary[this.position[0]];
+			this.element.style.left = Board.dictionary[this.position[1]];
 
 			// If this Piece reaches the end of the column on the opposite side of the
 			// board, it becomes a king
@@ -252,15 +248,11 @@ window.onload = function() {
 		 */
 		this.remove = function() {
 			// remove it and delete it from the gameboard
-			this.element.css("display", "none");
-			if (this.player == 1) {
-				$("#player2").append("<div class='capturedPiece'></div>");
-				Board.score.player2 += 1;
-			}
-			if (this.player == 2) {
-				$("#player1").append("<div class='capturedPiece'></div>");
-				Board.score.player1 += 1;
-			}
+			this.element.style.display = "none";
+			document
+				.getElementById("player" + (this.player === 1 ? "2" : "1"))
+				.insertAdjacentHTML("beforeend", "<div class='capturedPiece'></div>");
+			Board.score["player" + this.player] += 1;
 			Board.board[this.position[0]][this.position[1]] = 0;
 
 			// Reset position
@@ -409,9 +401,9 @@ window.onload = function() {
 		/**
 		 * The <div> of the DOM holding all the tiles
 		 * @constant
-		 * @type {HTMLDivElement} [$("div.tiles")]
+		 * @type {HTMLDivElement} [document.getElementsByClassName("tiles")[0]]
 		 */
-		tilesElement: $("div.tiles"),
+		tilesElement: document.getElementsByClassName("tiles")[0],
 
 		/**
 		 * Dictionary to convert position in Board.board to 'rem' units
@@ -478,67 +470,71 @@ window.onload = function() {
 			/**
 			 * Select the piece on click if it is the player's turn
 			 */
-			$(".piece").on("click", function() {
-				let selected;
-				const isPlayersTurn =
-					$(this)
-						.parent()
-						.attr("class")
-						.split(" ")[0] ==
-					"player" + Board.activePlayer + "pieces";
-				if (isPlayersTurn) {
-					if (Board.waitingOpponent) {
-						return;
-					}
-					if (
-						!Board.continuousjump &&
-						pieces[$(this).attr("id")].allowedtomove
-					) {
-						if ($(this).hasClass("selected")) selected = true;
-						$(".piece").each(function(index) {
-							$(".piece")
-								.eq(index)
-								.removeClass("selected");
-						});
-						if (!selected) {
-							$(this).addClass("selected");
+			const pieceDivs = document.getElementsByClassName("piece");
+			for (const piece of pieceDivs) {
+				piece.onclick = event => {
+					const isPlayersTurn = piece.parentNode.classList.contains(
+						"player" + Board.activePlayer + "pieces"
+					);
+					if (isPlayersTurn) {
+						if (Board.waitingOpponent) {
+							return;
 						}
-					} else {
-						const exist =
-							"jump exist for other pieces, that piece is not allowed to move";
-						const continuous =
-							"continuous jump exist, you have to jump the same piece";
-						const message = !Board.continuousjump ? exist : continuous;
-						console.info(message);
+						if (
+							!Board.continuousjump &&
+							pieces[piece.attributes["id"].value].allowedtomove
+						) {
+							const selectedPiece = this.getSelectedPiece();
+							if (selectedPiece) {
+								selectedPiece.classList.toggle("selected");
+							}
+							if (!piece.classList.contains("selected")) {
+								piece.classList.add("selected");
+							}
+						} else {
+							const exist =
+								"a jump exists for another piece => not allowed to move";
+							const continuous =
+								"continuous jump exists => you have to jump the same piece";
+							const message = !Board.continuousjump ? exist : continuous;
+							console.info(message);
+						}
 					}
-				}
-			});
+				};
+			}
 
 			/**
 			 * Move piece when tile is clicked
 			 */
-			$(".tile").on("click", function() {
-				// make sure a piece is selected
-				if ($(".selected").length != 0) {
+			const tileDivs = document.getElementsByClassName("tile");
+			for (const tile of tileDivs) {
+				tile.onclick = event => {
+					// make sure a piece is selected
+					const selectedPiece = this.getSelectedPiece();
+					if (!selectedPiece) {
+						return;
+					}
+					const selectedId = selectedPiece.attributes["id"].value;
+
 					// find the tile object being clicked
-					const tileID = $(this)
-						.attr("id")
-						.replace(/tile/, "");
-					const tile = tiles[tileID];
+					const tileID = tile.attributes["id"].value.replace(/tile/, "");
+					const tileObj = tiles[tileID];
+
 					// find the piece being selected
-					const piece = pieces[$(".selected").attr("id")];
+					const pieceObj = pieces[selectedId];
+
 					// check if the tile is in range from the object
-					const inRange = tile.inRange(piece);
+					const inRange = tileObj.inRange(pieceObj);
 					if (inRange != "wrong") {
 						// if the move needed is jump, then move it but also check if
 						// another move can be made (double and triple jumps)
 						if (inRange == "jump") {
-							if (piece.opponentJump(tile)) {
-								piece.move(tile, true);
-								if (piece.canJumpAny()) {
+							if (pieceObj.opponentJump(tileObj)) {
+								pieceObj.move(tileObj, true);
+								if (pieceObj.canJumpAny()) {
 									// change back to original since another turn can be made
 									//  Board.changeActivePlayer();
-									piece.element.addClass("selected");
+									pieceObj.element.classList.add("selected");
 									// exist continuous jump, you are not allowed to de-select
 									// this piece or select other pieces
 									Board.continuousjump = true;
@@ -548,23 +544,25 @@ window.onload = function() {
 							}
 							// if it's regular then move it if no jumping is available
 						} else if (inRange == "regular" && !Board.jumpexist) {
-							if (!piece.canJumpAny()) {
-								piece.move(tile);
+							if (!pieceObj.canJumpAny()) {
+								pieceObj.move(tileObj);
 								Board.changeActivePlayer();
 							} else {
 								alert("Si un pion peut être capturé, vous devez le faire !");
 							}
 						}
 					}
-				}
-			});
+				};
+			}
 
 			/**
 			 * Reset game when clear button is pressed
 			 */
-			$("#cleargame").on("click", function() {
+			const clearGameButton = document.getElementsByClassName("cleargame");
+			console.assert(clearGameButton, "Button with id 'cleargame' is missing");
+			clearGameButton.onclick = () => {
 				Board.clear();
-			});
+			};
 		},
 
 		/**
@@ -576,7 +574,8 @@ window.onload = function() {
 		 * @return {int}
 		 */
 		tileRender: function(row, column, countTiles) {
-			this.tilesElement.append(
+			this.tilesElement.insertAdjacentHTML(
+				"beforeend",
 				"<div class='tile' id='tile" +
 					countTiles +
 					"' style='top:" +
@@ -585,10 +584,10 @@ window.onload = function() {
 					this.dictionary[column] +
 					";'></div>"
 			);
-			tiles[countTiles] = new Tile($("#tile" + countTiles), [
-				parseInt(row),
-				parseInt(column)
-			]);
+			tiles[countTiles] = new Tile(
+				document.getElementById("tile" + countTiles),
+				[parseInt(row), parseInt(column)]
+			);
 			return countTiles + 1;
 		},
 
@@ -608,21 +607,43 @@ window.onload = function() {
 			countPieces,
 			testInitKing
 		) {
-			$(`.player${playerNumber}pieces`).append(
-				"<div class='piece' id='" +
-					countPieces +
-					"' style='top:" +
-					this.dictionary[row] +
-					";left:" +
-					this.dictionary[column] +
-					";'></div>"
-			);
+			document
+				.getElementsByClassName(`player${playerNumber}pieces`)[0]
+				.insertAdjacentHTML(
+					"beforeend",
+					"<div class='piece' id='" +
+						countPieces +
+						"' style='top:" +
+						this.dictionary[row] +
+						";left:" +
+						this.dictionary[column] +
+						";'></div>"
+				);
 			pieces[countPieces] = new Piece(
-				$("#" + countPieces),
+				document.getElementById(countPieces),
 				[row, column],
 				playerNumber,
 				testInitKing
 			);
+		},
+
+		/**
+		 * Retrieves the currently selected piece div
+		 *
+		 * @return {HTMLDivElement}
+		 */
+		getSelectedPiece: function() {
+			const selectedPieces = document.getElementsByClassName("piece selected");
+			console.assert(
+				selectedPieces.length <= 1,
+				"There should only be O or 1 selected piece"
+			);
+
+			if (!selectedPieces.length) {
+				return null;
+			}
+
+			return selectedPieces[0];
 		},
 
 		/**
@@ -677,32 +698,34 @@ window.onload = function() {
 		 * Change the active player - also changes div.turn's CSS
 		 */
 		changeActivePlayer: function() {
+			const turnDiv = document.getElementById("turn");
+			console.assert(turnDiv, "Div with id 'turn' is missing");
+
 			if (this.activePlayer === 1) {
 				if (boardConf.networkMode) {
 					this.startWaitingForOpponent();
 				}
 				this.activePlayer = 2;
-				$(".turn").css(
-					"background",
-					"linear-gradient(to right, transparent 50%, #BEEE62 50%)"
-				);
+				turnDiv.style.background =
+					"linear-gradient(to right, transparent 50%, #BEEE62 50%)";
 			} else {
 				this.activePlayer = 1;
-				$(".turn").css(
-					"background",
-					"linear-gradient(to right, #BEEE62 50%, transparent 50%)"
-				);
+				turnDiv.style.background =
+					"linear-gradient(to right, #BEEE62 50%, transparent 50%)";
 			}
 			this.check_if_jump_exist();
 
 			// Display a message if the party is finished
 			// (someone won or there is a draw)
 			const playerWon = Board.checkifAnybodyWon();
+			const winnerDiv = document.getElementById("winner");
+			console.assert(winnerDiv, "Div with id 'winner' is missing");
+
 			if (playerWon !== false) {
 				if (playerWon === 0) {
-					$("#winner").html("Égalité");
+					winnerDiv.innerHtml = "Égalité";
 				} else {
-					$("#winner").html("Le joueur " + playerWon + " gagne !");
+					winnerDiv.innerHTML = "Le joueur " + playerWon + " gagne !";
 				}
 			}
 		},
@@ -875,4 +898,4 @@ window.onload = function() {
 	} else {
 		initLocalGame();
 	}
-};
+});
