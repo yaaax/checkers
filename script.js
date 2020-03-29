@@ -146,14 +146,63 @@ window.addEventListener("DOMContentLoaded", event => {
 		 * @return {boolean} true if this Piece can jump somewhere, otherwise false
 		 */
 		this.canJumpAny = function() {
+			if (this.king) {
+				return this.canKingJumpAny();
+			} else {
+				return this.canRegularJumpAny();
+			}
+		};
+
+		/**
+		 * Tell if this -regular- Piece can jump somewhere
+		 *
+		 * @return {boolean} true if this Piece can jump somewhere, otherwise false
+		 */
+		this.canRegularJumpAny = function() {
 			const oldX = this.position[1];
 			const oldY = this.position[0];
 			return (
-				this.canOpponentJump([oldY + 2, oldX + 2]) ||
-				this.canOpponentJump([oldY + 2, oldX - 2]) ||
-				this.canOpponentJump([oldY - 2, oldX + 2]) ||
-				this.canOpponentJump([oldY - 2, oldX - 2])
+				this.getOpponentJumpInfo([oldY + 2, oldX + 2]) instanceof Piece ||
+				this.getOpponentJumpInfo([oldY + 2, oldX - 2]) instanceof Piece ||
+				this.getOpponentJumpInfo([oldY - 2, oldX + 2]) instanceof Piece ||
+				this.getOpponentJumpInfo([oldY - 2, oldX - 2]) instanceof Piece
 			);
+		};
+
+		/**
+		 * Tell if this Piece can jump somewhere
+		 *
+		 * @return {boolean} true if this Piece can jump somewhere, otherwise false
+		 */
+		this.canKingJumpAny = function() {
+			return (
+				this.canKingJumpInDirection(1, 1) ||
+				this.canKingJumpInDirection(1, -1) ||
+				this.canKingJumpInDirection(-1, 1) ||
+				this.canKingJumpInDirection(-1, -1)
+			);
+		};
+
+		this.canKingJumpInDirection = function(stepX, stepY) {
+			let checkX = this.position[1] + stepX;
+			let checkY = this.position[0] + stepY;
+			for (;;) {
+				checkX += stepX;
+				checkY += stepY;
+				const type = Board.getPlaceType(checkY, checkX);
+				if (type === -1) {
+					return false;
+				}
+				if (type === 0) {
+					continue;
+				} else {
+					// piece found. Is next place empty?
+					if (Board.getPlaceType(checkY + stepY, checkX + stepX) === 0) {
+						return true;
+					}
+					return false;
+				}
+			}
 		};
 
 		/**
@@ -162,21 +211,22 @@ window.addEventListener("DOMContentLoaded", event => {
 		 * @param {int[]} newPosition Array describing the position of this Piece on
 		 * 														the board [row, column]
 		 *
-		 * @return {boolean} true if an opponent jump is possible, otherwise false
+		 * @return {*} TODO
 		 */
-		this.canOpponentJump = function(newPosition) {
+		this.getOpponentJumpInfo = function(newPosition) {
 			// find what the displacement is
 			const newX = newPosition[1];
 			const newY = newPosition[0];
 
 			// New position musy be valid
 			if (!Board.isValidPlacetoMove(newY, newX)) {
-				return false;
+				return "invalid";
 			}
 
 			const oldX = this.position[1];
 			const oldY = this.position[0];
 
+			// set X step and Y step depending on diagonal move direction
 			const stepX = newX > oldX ? 1 : -1;
 			const stepY = newY > oldY ? 1 : -1;
 
@@ -184,17 +234,18 @@ window.addEventListener("DOMContentLoaded", event => {
 			let checkY;
 			for (
 				checkX = oldX + stepX, checkY = oldY + stepY;
-				checkX < newX;
+				Math.abs(checkX - newX) > 0;
 				checkX += stepX, checkY += stepY
 			) {
 				const type = Board.getPlaceType(checkY, checkX);
-				if (type === -1) {
-					// out of boundaries
-					return false;
-				} else if (type === 0) {
+				console.assert(
+					type !== -1,
+					"out of boundaries?! this should never happen"
+				);
+				if (type === 0) {
 					// empty place
 					if (!this.king) {
-						return false;
+						return "extra_empty";
 					}
 					continue;
 				} else {
@@ -203,7 +254,7 @@ window.addEventListener("DOMContentLoaded", event => {
 						// ok, this is the one
 						break;
 					}
-					return false;
+					return "two_aside";
 				}
 			}
 
@@ -231,8 +282,8 @@ window.addEventListener("DOMContentLoaded", event => {
 		 * @return {boolean} true if an opponent jump has been made, otherwise false
 		 */
 		this.opponentJump = function(tile) {
-			const pieceToRemove = this.canOpponentJump(tile.position);
-			if (!pieceToRemove) {
+			const pieceToRemove = this.getOpponentJumpInfo(tile.position);
+			if (!(pieceToRemove instanceof Piece)) {
 				return false;
 			}
 
@@ -270,6 +321,7 @@ window.addEventListener("DOMContentLoaded", event => {
 		this.element = element;
 		// position in gameboard
 		this.position = position;
+
 		// if tile is in range from the piece
 		this.inRange = function(piece) {
 			/** @todo improve performance */
@@ -281,8 +333,14 @@ window.addEventListener("DOMContentLoaded", event => {
 					return "wrong";
 				}
 			}
-			if (piece.canOpponentJump(position)) {
+			const opponentJumpInfo = piece.getOpponentJumpInfo(position);
+			if (opponentJumpInfo instanceof Piece) {
 				return "jump";
+			} else if (
+				opponentJumpInfo === "invalid" ||
+				opponentJumpInfo === "two_aside"
+			) {
+				return "wrong";
 			}
 			if (
 				dist(
@@ -414,7 +472,7 @@ window.addEventListener("DOMContentLoaded", event => {
 		 */
 		dictionary: [],
 
-		initalize: function(gameBoard) {
+		initialize: function(gameBoard) {
 			console.log("Initialize %o", "Board game");
 			this.board = gameBoard;
 
@@ -457,7 +515,8 @@ window.addEventListener("DOMContentLoaded", event => {
 				}
 			}
 
-			Board.initEventListeners();
+			this.initEventListeners();
+			this.check_if_jump_exist();
 		},
 
 		// ------
@@ -789,21 +848,21 @@ window.addEventListener("DOMContentLoaded", event => {
 		check_if_jump_exist: function() {
 			this.jumpexist = false;
 			this.continuousjump = false;
-			for (const k of pieces) {
-				k.allowedtomove = false;
+			for (const p of pieces) {
+				p.allowedtomove = false;
 				// if jump exist, only set those "jump" pieces "allowed to move"
 				if (
-					k.position.length != 0 &&
-					k.player == this.activePlayer &&
-					k.canJumpAny()
+					p.position.length != 0 &&
+					p.player == this.activePlayer &&
+					p.canJumpAny()
 				) {
 					this.jumpexist = true;
-					k.allowedtomove = true;
+					p.allowedtomove = true;
 				}
 			}
 			// if jump doesn't exist, all pieces are allowed to move
 			if (!this.jumpexist) {
-				for (const k of pieces) k.allowedtomove = true;
+				for (const p of pieces) p.allowedtomove = true;
 			}
 		}
 	};
@@ -815,7 +874,7 @@ window.addEventListener("DOMContentLoaded", event => {
 		try {
 			const api = new Api();
 			const gameBoard = await api.getCurrentGame();
-			Board.initalize(gameBoard);
+			Board.initialize(gameBoard);
 		} catch (error) {
 			console.error("Issue initializing the game from API.", error);
 		}
@@ -890,7 +949,7 @@ window.addEventListener("DOMContentLoaded", event => {
 		// 	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 		// ];
 
-		Board.initalize(gameBoard);
+		Board.initialize(gameBoard);
 	}
 
 	if (boardConf.networkMode) {
